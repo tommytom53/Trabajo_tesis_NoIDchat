@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap');
 body, html {
   height: 100%;
@@ -12,6 +13,64 @@ header, footer {
   justify-content: space-between; /* Esto alineará el logo a la derecha */
   align-items: center; /* Esto centrará verticalmente el contenido */
 }
+
+.select-menu{
+  width: 380px;
+  margin: 140px auto;
+}
+.select-menu .select-btn{
+  display: flex;
+  height: 55px;
+  background: #fff;
+  padding: 20px;
+  font-size: 18px;
+  font-weight: 400;
+  border-radius: 8px;
+  align-items: center;
+  cursor: pointer;
+  justify-content: space-between;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+.select-btn i{
+  font-size: 25px;
+  transition: 0.3s;
+}
+.select-menu.active .select-btn i{
+  transform: rotate(-180deg);
+}
+.select-menu .options{
+  position: relative;
+  padding: 20px;
+  margin-top: 10px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 0 3px rgba(0,0,0,0.1);
+  display: none;
+}
+.select-menu.active .options{
+  display: block;
+}
+.options .option{
+  display: flex;
+  height: 55px;
+  cursor: pointer;
+  padding: 0 16px;
+  border-radius: 8px;
+  align-items: center;
+  background: #fff;
+}
+.options .option:hover{
+  background: #F2F2F2;
+}
+.option i{
+  font-size: 25px;
+  margin-right: 12px;
+}
+.option .option-text{
+  font-size: 18px;
+  color: #333;
+}
+
 .menu-container {
   overflow: hidden;
   max-height: 0;
@@ -66,6 +125,8 @@ header, footer {
   background-color: #ffcc66; /* Amarillo */
 }
 
+
+
 .seccion-central {
   flex: 1;
   padding: 20px;
@@ -85,7 +146,7 @@ header, footer {
   min-height: 300px;
   min-width: 300px;
   background-color: rgb(155, 103, 34); /* Color de fondo del contenedor */
-  border: 1px solid #030000; /* Borde del contenedor */
+  border: 2px solid #030000; /* Borde del contenedor */
   align-items: center;
   display: flex;
   justify-content: center;
@@ -100,13 +161,15 @@ header, footer {
   max-width: 1000px;
   max-height: 1400px;
   background-color: rgb(155, 103, 34);
-  border: 1px solid #030000;
-  overflow: auto;
+  border: 3px solid #030000;
+  overflow-y: auto; /* Añade una barra de desplazamiento vertical cuando sea necesario */
 }
 video {
   width: 100%;
   display: flex;
   border-radius: 10px; /* Bordes redondeados */
+  align-items: center;
+  justify-content: center;
 }
 
 .formulario {
@@ -158,8 +221,13 @@ video {
     align-items: flex-end;
     justify-content: space-between;
     margin-top: auto; /* Empuja hacia abajo el cuadro de mensaje */
+    overflow-y: auto; /* Añade una barra de desplazamiento vertical cuando sea necesario */
+    max-height: 100%;
 }
-
+.messaging-container {
+  max-height: 700px; /* Altura máxima del contenedor */
+  overflow-y: auto; /* Añade una barra de desplazamiento vertical cuando sea necesario */
+}
 #messageInput {
     width: calc(100% - 100px); /* El cuadro de mensaje ocupa el ancho menos el ancho del botón */
     padding: 8px;
@@ -169,4 +237,48 @@ video {
 #sendMessageButton {
     width: 90px; /* Ancho del botón */
     padding: 8px;
+}
+
+button{
+  color: orange;
+  border-radius:7px;
+  border:none;
+  height: 40px;
+  width: 100px;
+  cursor: pointer;
+}
+button,
+#callInput {
+  vertical-align: middle;
+}
+
+
+button:enabled:hover{
+  background-color: rgba(255, 68, 0, 0.856);
+  color: white;
+  box-shadow: 0 0 0 3px orangered;
+}
+button:disabled:hover {
+  background-color: inherit;
+  color: orange;
+  box-shadow: none;
+  /* Agrega otros estilos si es necesario */
+}
+
+#callInput {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 12px;
+  width: 100%;
+  max-width: 200px; /* Ejemplo de ancho máximo */
+  box-sizing: border-box; /* Incluye el padding en el ancho total */
+ /* Espacio inferior */
+  /* Otros estilos que desees agregar */
+}
+
+#callInput:focus {
+  outline: none; /* Elimina el contorno al estar enfocado */
+  border-color: dodgerblue; /* Cambia el color del borde al estar enfocado */
+  /* Otros estilos cuando el input está enfocado */
 }

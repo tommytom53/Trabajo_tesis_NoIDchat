@@ -27,6 +27,13 @@
 
                         <input type="text" id="favourite_song" placeholder="Canción favorita">
                         <input type="text" id="milk_before_cereal" placeholder="¿La leche va antes del cereal? ( Si | No )">
+                        <select id="countrySelect">
+                            <option value="Es">Español</option>
+                            <option value="It">Italiano</option>
+                            <option value="En">Francés</option>
+                            <option value="Pt">Portugal</option>
+                            <!-- Agrega más opciones según sea necesario -->
+                          </select>
 
                         <div id="button_container">
                             <button onclick="register()">Registrarse</button>
@@ -51,5 +58,7 @@
 
     <!-- Our script must be loaded after firebase references -->
     <script src="index.js"></script>
+
+    
 
 </html>

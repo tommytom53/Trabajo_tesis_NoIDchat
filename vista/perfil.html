@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <title>Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="index.css">
     <script type="module" src="/main.js"></script>
 </head>
 <body>
 <header>
     <button onclick="toggleMenu()">Elegir idioma</button>
-
+    <div class="profile-button" id="selectedFlag">
+        <span id="selectedFlagEmoji"></span>
+    </div>
     <div class="menu-container" id="menuContainer">
         <div class="menu" id="menu">
             <a href="#" onclick="seleccionarPais('espana', 'bandera_espana.png')"><img src="bandera_espana.png" alt="España"> España</a>
@@ -20,9 +23,7 @@
     </div>
 
 
-    <div class="profile-button" id="selectedFlag">
-        <span id="selectedFlagEmoji"></span>
-    </div>
+    
     <a href="index.html" class="profile-button">
         <img src="icono_casa.png" alt="Inicio" />
     </a>
@@ -38,9 +39,13 @@
         <div class="seccion-central">
 
             <div id="caja2">
-                <h1>Welcome to Dashboard</h1>
+                <div id="form_header_container">
+                    <h2 id="form_header"> PERFIL </h2>
+                </div>
+                <div id="form_container">
+                    <div id="form_content_container">
+                        <div id="form_content_inner_container">
                 <div id="user-info">
-                    <!-- Formulario para editar información de usuario -->
                 <form id="edit-user-form">
                     <label for="new-email">New Email:</label>
                     <input type="email" id="email" name="new-email" placehoder = "email"><br><br>
@@ -50,32 +55,31 @@
 
                     <label for="new-password">New Password:</label>
                     <input type="password" id="new-password" name="new-password" placeholder="New Password"><br><br>
-
+                    <div id="require">
                     <button type="submit">Save Changes</button>
+                    </div>
                 </form>
 
                 </div>
-                
+            </div>
+        </div>
             </div>
         </div>
     </div>
-
+</div>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <script src="/index.js"></script>
+
     <script>
-        var firebaseConfig = {
-            apiKey: "AIzaSyCibDz4E5DNe2OeGGs6JGi4cu_-AG_qC2s",
-            authDomain: "tesis-ea84f.firebaseapp.com",
-            projectId: "tesis-ea84f",
-            storageBucket: "tesis-ea84f.appspot.com",
-            messagingSenderId: "649216652710",
-            appId: "1:649216652710:web:9db86a29c798f557658b67"
-        };
 
         // Inicializar Firebase
+        // Verificar si no hay una instancia de Firebase ya inicializada
+        if (firebase.apps.length === 0) {
         firebase.initializeApp(firebaseConfig);
+        }
         function showUserInfo(userData) {
         const emailInput = document.getElementById('email');
         const usernameInput = document.getElementById('nombre');
@@ -123,18 +127,51 @@ editUserForm.addEventListener('submit', function(event) {
   // Obtener el usuario actual
   const user = firebase.auth().currentUser;
 
-  // Actualizar los datos del usuario en la base de datos
-  firebase.database().ref('users/' + user.uid).update({
-    email: newEmail,
-    full_name: newUsername
-    // Añadir otros campos si es necesario
-  }).then(function() {
-    // Éxito al actualizar la información del usuario
-    alert('User information updated successfully!');
-  }).catch(function(error) {
-    // Error al actualizar la información del usuario
-    alert('Error updating user information: ' + error.message);
-  });
+  // Solicitar al usuario que ingrese su contraseña actual para verificar
+  const password = prompt('Please enter your password for verification');
+
+  // Crear las credenciales del usuario
+  const credential = firebase.auth.EmailAuthProvider.credential(
+    user.email,
+    password
+  );
+
+  // Reautenticar al usuario con las credenciales proporcionadas
+  user.reauthenticateWithCredential(credential)
+    .then(function() {
+      // La reautenticación fue exitosa, ahora actualizar los datos del usuario
+
+      // Crear objeto con los campos a actualizar
+      const updates = {};
+
+      // Verificar y añadir los campos no vacíos al objeto de actualización
+      if (newEmail !== '') {
+        updates.email = newEmail;
+      }
+
+      if (newUsername !== '') {
+        updates.full_name = newUsername;
+      }
+
+      // Si deseas actualizar la contraseña (newPassword !== ''), añádela aquí
+
+      // Verificar si hay algún campo para actualizar
+      if (Object.keys(updates).length === 0) {
+        alert('No changes to update.');
+        return; // No hay campos para actualizar
+      }
+
+      // Actualizar los datos del usuario en la base de datos
+      return firebase.database().ref('users/' + user.uid).update(updates);
+    })
+    .then(function() {
+      // Éxito al actualizar la información del usuario
+      alert('User information updated successfully!');
+    })
+    .catch(function(error) {
+      // Error al actualizar la información del usuario o reautenticar
+      alert('Error updating user information: ' + error.message);
+    });
 
   // Actualizar el email y nombre en la página (opcional)
   const emailInput = document.getElementById('email');
@@ -145,6 +182,7 @@ editUserForm.addEventListener('submit', function(event) {
   // Limpiar los campos del formulario
   editUserForm.reset();
 });
+
     </script>
 </body>
 </html>

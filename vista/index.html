@@ -2,26 +2,28 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" href="icono.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css">
+    <script type="module" src="/main.js"></script>
+    
     <title>NoIDchat</title>
   </head>
   <header>
+    
     <button onclick="toggleMenu()">Elegir idioma</button>
     <div class="profile-button" id="selectedFlag">
       <span id="selectedFlagEmoji"></span>
     </div>
     <div class="menu-container" id="menuContainer">
         <div class="menu" id="menu">
-            <a href="#" onclick="seleccionarPais('espana', 'bandera_espana.png')"><img src="bandera_espana.png" alt="España"> España</a>
-            <a href="#" onclick="seleccionarPais('italia', 'bandera_italia.png')"><img src="bandera_italia.png" alt="Italia"> Italia</a>
-            <a href="#" onclick="seleccionarPais('estados-unidos', 'bandera_estados_unidos.png')"><img src="bandera_estados_unidos.png" alt="Estados Unidos"> Estados Unidos</a>
-            <a href="#" onclick="seleccionarPais('portugal', 'bandera_portugal.png')"><img src="bandera_portugal.png" alt="Portugal"> Portugal</a>
+            <a href="#" onclick="seleccionarPais('espana', 'bandera_espana.png')"><img src="bandera_espana.png" alt="España">Español</a>
+            <a href="#" onclick="seleccionarPais('italia', 'bandera_italia.png')"><img src="bandera_italia.png" alt="Italia">Italiano</a>
+            <a href="#" onclick="seleccionarPais('estados-unidos', 'bandera_estados_unidos.png')"><img src="bandera_estados_unidos.png" alt="Estados Unidos">Inglés</a>
+            <a href="#" onclick="seleccionarPais('portugal', 'bandera_portugal.png')"><img src="bandera_portugal.png" alt="Portugal">Portugues</a>
         </div>
     </div>
-
-
+    
     
     <a href="index.html" class="profile-button">
       <img src="icono_casa.png" alt="Inicio" />
@@ -56,10 +58,11 @@
         <div class="seccion-central">
           <button id="webcamButton">Iniciar webcam</button>
 
-                <button id="callButton" disabled>Crear codigo de invitación</button>
-                <input id="callInput" placeholder="Ingresa codigo de invitación"/>
-                <button id="answerButton" disabled>Ingresar a la llamada</button>
-                <button id="hangupButton" onclick="hangup()" disabled>Hangup</button>
+                <button title="Da click para generar codigo de invitación." id="callButton" disabled>Crear codigo de invitación</button>
+                <input title="Aquí se introduce el código de invitación de tu amigo." id="callInput" placeholder="Ingresa codigo de invitación"/>
+                <button title="Solo funciona con códigos de invitación reales." id="answerButton" disabled>Ingresar a la llamada</button>
+                <button tittle="Click para buscar salas de video" id="emparejarLlamada" >Emparejar</button>
+                <button title="Da click para salir de la sala" id="hangupButton" onclick="hangup()">Salir</button>
             <div id="caja2">
                 
                 
@@ -80,7 +83,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-    <script type="module" src="/main.js"></script>
     <script src="/index.js"></script>
   </body>
 </html>
