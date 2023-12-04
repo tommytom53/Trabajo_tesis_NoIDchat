@@ -1,3 +1,5 @@
+
+
 var firebaseConfig = {
   apiKey: "AIzaSyCibDz4E5DNe2OeGGs6JGi4cu_-AG_qC2s",
   authDomain: "tesis-ea84f.firebaseapp.com",
@@ -20,7 +22,7 @@ function register () {
   full_name = document.getElementById('full_name').value
   favourite_song = document.getElementById('favourite_song').value
   milk_before_cereal = document.getElementById('milk_before_cereal').value
-
+  country = document.getElementById('countrySelect').value; 
   // Validate input fields
   if (validate_email(email) == false || validate_password(password) == false) {
     alert('Email or Password is Outta Line!!')
@@ -35,36 +37,40 @@ function register () {
   // Move on with Auth
   auth.createUserWithEmailAndPassword(email, password)
   .then(function() {
-    // Declare user variable
-    var user = auth.currentUser
+    var user = auth.currentUser;
 
-    // Add this user to Firebase Database
-    var database_ref = database.ref()
+    // Update the display name
+    user.updateProfile({
+      displayName: full_name // Assigning the full_name as the displayName
+    }).then(function() {
+      // Data for the Realtime Database
+      var user_data = {
+        email: email,
+        full_name: full_name,
+        favourite_song: favourite_song,
+        milk_before_cereal: milk_before_cereal,
+        last_login: Date.now(),
+        country: country
+      };
 
-    // Create User data
-    var user_data = {
-      email : email,
-      full_name : full_name,
-      favourite_song : favourite_song,
-      milk_before_cereal : milk_before_cereal,
-      last_login : Date.now()
-    }
+      var database_ref = database.ref();
 
-    // Push to Firebase Database
-    database_ref.child('users/' + user.uid).set(user_data)
-    .then(function() {
-      alert('User Created!!');
-      window.location.href = 'login.html'; // Redirección aquí
-    })
-    // DOne
+      database_ref.child('users/' + user.uid).set(user_data)
+        .then(function() {
+          alert('User Created!!');
+          window.location.href = 'login.html';
+        });
+    }).catch(function(error) {
+      console.error('Error updating profile:', error);
+      alert('Error creating user. Please try again.');
+    });
   })
   .catch(function(error) {
-    // Firebase will use this to alert of its errors
-    var error_code = error.code
-    var error_message = error.message
+    var error_code = error.code;
+    var error_message = error.message;
 
-    alert(error_message)
-  })
+    alert(error_message);
+  });
 }
 
 // Set up our login function
