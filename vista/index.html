@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css">
+    <title>NoIDchat</title>
+  </head>
+  <header>
+    <button onclick="toggleMenu()">Elegir idioma</button>
+    <div class="profile-button" id="selectedFlag">
+      <span id="selectedFlagEmoji"></span>
+    </div>
+    <div class="menu-container" id="menuContainer">
+        <div class="menu" id="menu">
+            <a href="#" onclick="seleccionarPais('espana', 'bandera_espana.png')"><img src="bandera_espana.png" alt="España"> España</a>
+            <a href="#" onclick="seleccionarPais('italia', 'bandera_italia.png')"><img src="bandera_italia.png" alt="Italia"> Italia</a>
+            <a href="#" onclick="seleccionarPais('estados-unidos', 'bandera_estados_unidos.png')"><img src="bandera_estados_unidos.png" alt="Estados Unidos"> Estados Unidos</a>
+            <a href="#" onclick="seleccionarPais('portugal', 'bandera_portugal.png')"><img src="bandera_portugal.png" alt="Portugal"> Portugal</a>
+        </div>
+    </div>
+
+
+    
+    <a href="index.html" class="profile-button">
+      <img src="icono_casa.png" alt="Inicio" />
+    </a>
+    <a href="perfil.html" class="profile-button">
+      <img src="icono_persona.png" alt="Perfil" />
+    </a>
+
+    <a href="#" onclick="logout()" class="profile-button">
+      <img src="icono_puerta.png" alt="Terminar sesion" />
+    </a>
+  </header>
+  <body>
+    <div class="contenedor">
+        
+        <div class="seccion-izq2">
+            <div id="caja">
+                <div class="videos">
+                    <span>
+                      <video id="webcamVideo" autoplay playsinline></video>
+                    </span>
+                </div>
+            </div>
+            <div id="caja">
+                <div class="videos">
+                    <span>
+                      <video id="remoteVideo" autoplay playsinline></video>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="seccion-central">
+          <button id="webcamButton">Iniciar webcam</button>
+
+                <button id="callButton" disabled>Crear codigo de invitación</button>
+                <input id="callInput" placeholder="Ingresa codigo de invitación"/>
+                <button id="answerButton" disabled>Ingresar a la llamada</button>
+                <button id="hangupButton" onclick="hangup()" disabled>Hangup</button>
+            <div id="caja2">
+                
+                
+                <div class="messaging-container">
+                  <!-- Formulario para enviar mensajes -->
+                  <form id="messageForm">
+                    <input type="text" id="messageInput" placeholder="Escribe un mensaje..." required>
+                    <button type="submit" id="sendMessageButton">Enviar</button>
+                  </form>
+              
+                  <!-- Área para mostrar los mensajes -->
+                  <div id="messageArea" class="message-area"></div>
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <script type="module" src="/main.js"></script>
+    <script src="/index.js"></script>
+  </body>
+</html>

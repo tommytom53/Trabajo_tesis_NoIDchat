@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap');
+body, html {
+  height: 100%;
+  margin: 0;
+}
+
+header, footer {
+  background-color: #333;
+  color: white;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between; /* Esto alineará el logo a la derecha */
+  align-items: center; /* Esto centrará verticalmente el contenido */
+}
+.menu-container {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease-out;
+
+}
+
+.menu-container.open {
+  max-height: 200px; /* Altura máxima para mostrar las banderas */
+  transition: max-height 0.5s ease-in;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.menu a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.selected-flag {
+  margin-top: 20px;
+}
+
+/* Estilos para las imágenes de las banderas */
+.menu a img {
+  width: 24px; /* Ajusta el tamaño de las banderas según sea necesario */
+  margin-right: 10px; /* Espacio entre la imagen y el texto */
+}
+
+.contenedor {
+  display: flex;
+  min-height: 100vh;
+}
+
+.seccion-izquierda, .seccion-derecha {
+  flex: 0 0 15%;
+  padding: 20px;
+  background-color: #ffcc66; /* Amarillo */
+}
+.seccion-izq2 {
+  flex: 0 0 15%;
+  padding: 100px;
+  background-color: #ffcc66; /* Amarillo */
+}
+
+.seccion-central {
+  flex: 1;
+  padding: 20px;
+  background-color: #ffcc66; /* Amarillo */
+}
+
+.seccion-izquierda {
+  background-color: #66cc99; /* Verde */
+}
+
+.seccion-derecha {
+  background-color: #3366cc; /* Azul */
+}
+#caja {
+  width: 90%; /* Ancho del contenedor */
+  margin: 2rem 0;
+  min-height: 300px;
+  min-width: 300px;
+  background-color: rgb(155, 103, 34); /* Color de fondo del contenedor */
+  border: 1px solid #030000; /* Borde del contenedor */
+  align-items: center;
+  display: flex;
+  justify-content: center;
+
+}
+#caja2{
+  position: relative;
+  width: 100%;
+  margin: 5rem auto;
+  min-width: 300px;
+  min-height: 700px;
+  max-width: 1000px;
+  max-height: 1400px;
+  background-color: rgb(155, 103, 34);
+  border: 1px solid #030000;
+  overflow: auto;
+}
+video {
+  width: 100%;
+  display: flex;
+  border-radius: 10px; /* Bordes redondeados */
+}
+
+.formulario {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.formulario input[type="text"] {
+  width: calc(100% - 70px);
+  padding: 8px;
+  margin-right: 5px;
+}
+
+.formulario button {
+  padding: 8px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+}
+  /* Estilos para el botón de la persona */
+  .profile-button {
+    float: right; /* Alinea el botón a la derecha */
+    margin-right: 20px; /* Espacio entre el botón y el borde */
+    cursor: pointer; /* Cambia el cursor al pasar por encima */
+    text-decoration: none; /* Quita el subrayado del enlace */
+    display: block; /* Hace que el enlace sea un bloque para aplicar estilos */
+    width: 40px; /* Ancho del botón */
+    height: 40px; /* Altura del botón */
+    line-height: 40px; /* Centra verticalmente el contenido */
+    text-align: center; /* Centra horizontalmente el contenido */
+    background-color: #ccc; /* Color de fondo del botón */
+    border-radius: 5px; /* Bordes redondeados */
+    margin-top: 0; /* Elimina el margen superior */
+    padding: 0; /* Elimina el relleno */
+  }
+  
+
+  .profile-button img {
+    width: 35px; /* Ancho del ícono */
+    height: 35px; /* Altura del ícono */
+    vertical-align: middle; /* Alinea verticalmente el ícono */
+  }
+  .message-box {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-top: auto; /* Empuja hacia abajo el cuadro de mensaje */
+}
+
+#messageInput {
+    width: calc(100% - 100px); /* El cuadro de mensaje ocupa el ancho menos el ancho del botón */
+    padding: 8px;
+    margin-right: 10px;
+}
+
+#sendMessageButton {
+    width: 90px; /* Ancho del botón */
+    padding: 8px;
+}

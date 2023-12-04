@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="/main.js"></script>
+</head>
+<body>
+<header>
+    <button onclick="toggleMenu()">Elegir idioma</button>
+
+    <div class="menu-container" id="menuContainer">
+        <div class="menu" id="menu">
+            <a href="#" onclick="seleccionarPais('espana', 'bandera_espana.png')"><img src="bandera_espana.png" alt="España"> España</a>
+            <a href="#" onclick="seleccionarPais('italia', 'bandera_italia.png')"><img src="bandera_italia.png" alt="Italia"> Italia</a>
+            <a href="#" onclick="seleccionarPais('estados-unidos', 'bandera_estados_unidos.png')"><img src="bandera_estados_unidos.png" alt="Estados Unidos"> Estados Unidos</a>
+            <a href="#" onclick="seleccionarPais('portugal', 'bandera_portugal.png')"><img src="bandera_portugal.png" alt="Portugal"> Portugal</a>
+        </div>
+    </div>
+
+
+    <div class="profile-button" id="selectedFlag">
+        <span id="selectedFlagEmoji"></span>
+    </div>
+    <a href="index.html" class="profile-button">
+        <img src="icono_casa.png" alt="Inicio" />
+    </a>
+    <a href="perfil.html" class="profile-button">
+      <img src="icono_persona.png" alt="Perfil" />
+    </a>
+    <a href="#" onclick="logout()" class="profile-button">
+        <img src="icono_puerta.png" alt="Terminar sesion" />
+    </a>
+  </header>
+    <div class="contenedor">
+        
+        <div class="seccion-central">
+
+            <div id="caja2">
+                <h1>Welcome to Dashboard</h1>
+                <div id="user-info">
+                    <!-- Formulario para editar información de usuario -->
+                <form id="edit-user-form">
+                    <label for="new-email">New Email:</label>
+                    <input type="email" id="email" name="new-email" placehoder = "email"><br><br>
+
+                    <label for="new-username">New Username:</label>
+                    <input type="text" id="nombre" name="new-username" placeholder = "Usuario"><br><br>
+
+                    <label for="new-password">New Password:</label>
+                    <input type="password" id="new-password" name="new-password" placeholder="New Password"><br><br>
+
+                    <button type="submit">Save Changes</button>
+                </form>
+
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyCibDz4E5DNe2OeGGs6JGi4cu_-AG_qC2s",
+            authDomain: "tesis-ea84f.firebaseapp.com",
+            projectId: "tesis-ea84f",
+            storageBucket: "tesis-ea84f.appspot.com",
+            messagingSenderId: "649216652710",
+            appId: "1:649216652710:web:9db86a29c798f557658b67"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        function showUserInfo(userData) {
+        const emailInput = document.getElementById('email');
+        const usernameInput = document.getElementById('nombre');
+        
+        // Establecer valores como placeholders en los campos de entrada
+        emailInput.placeholder = userData.email;
+        usernameInput.placeholder = userData.full_name;
+    }
+
+        // Función para verificar la autenticación al cargar la página
+        function checkAuth() {
+            firebase.auth().onAuthStateChanged(function (user) {
+                if (user) {
+                    // Usuario autenticado, obtener información del usuario
+                    var userRef = firebase.database().ref('users/' + user.uid);
+                    userRef.once('value', function (snapshot) {
+                        var userData = snapshot.val();
+                        if (userData) {
+                            // Mostrar información del usuario en la página
+                            showUserInfo(userData);
+                        }
+                    });
+                } else {
+                    // Usuario no autenticado, redirigir al login
+                    window.location.href = 'register.html';
+                }
+            });
+        }
+
+        // Verificar la autenticación al cargar la página
+        window.onload = function () {
+            checkAuth();
+        };
+        const editUserForm = document.getElementById('edit-user-form');
+
+// Escuchar el evento submit del formulario
+editUserForm.addEventListener('submit', function(event) {
+  event.preventDefault(); // Prevenir el envío por defecto
+
+  // Obtener los nuevos valores del formulario
+  const newEmail = document.getElementById('email').value;
+  const newUsername = document.getElementById('nombre').value;
+  const newPassword = document.getElementById('new-password').value;
+
+  // Obtener el usuario actual
+  const user = firebase.auth().currentUser;
+
+  // Actualizar los datos del usuario en la base de datos
+  firebase.database().ref('users/' + user.uid).update({
+    email: newEmail,
+    full_name: newUsername
+    // Añadir otros campos si es necesario
+  }).then(function() {
+    // Éxito al actualizar la información del usuario
+    alert('User information updated successfully!');
+  }).catch(function(error) {
+    // Error al actualizar la información del usuario
+    alert('Error updating user information: ' + error.message);
+  });
+
+  // Actualizar el email y nombre en la página (opcional)
+  const emailInput = document.getElementById('email');
+  const usernameInput = document.getElementById('nombre');
+  emailInput.placeholder = newEmail;
+  usernameInput.placeholder = newUsername;
+
+  // Limpiar los campos del formulario
+  editUserForm.reset();
+});
+    </script>
+</body>
+</html>
