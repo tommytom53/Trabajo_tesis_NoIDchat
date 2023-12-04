@@ -18,6 +18,7 @@ if (!firebase.apps.length) {
 }
 const firestore = firebase.firestore();
 const displayedMessages = new Set();
+let lang4 = ''; 
 const servers = {
   iceServers: [
     {
@@ -36,19 +37,11 @@ const pc = new RTCPeerConnection(servers);
 let localStream = null;
 let remoteStream = null;
 let currentUser = null;
-
-function getCurrentUser() {
-  return new Promise((resolve, reject) => {
-    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-      unsubscribe();
-      if (user) {
-        resolve(user.displayName);
-      } else {
-        reject('No hay usuario autenticado');
-      }
-    });
-  });
-}
+let recognition;
+let uidsala = "";
+let lang = 'es-ES';
+let lang2 = 'es';
+let currentRoomId = ""
 
 async function loadCurrentUser() {
   await firebase.auth().onAuthStateChanged(async (user) => {
@@ -66,12 +59,12 @@ async function loadCurrentUser() {
         // Restaurar la selección anterior si existe
         seleccionarPais(selectedCountry, selectedFlag);
       }
+      lang4 = userData ? userData.country : null;
+      cargarTraducciones();
         });
     }
   });
 }
-let lang = 'es-ES';
-let lang2 = 'es';
 
 window.toggleMenu=function() {
   var menuContainer = document.getElementById('menuContainer');
@@ -112,14 +105,30 @@ window.seleccionarPais= function(pais, bandera) {
   localStorage.setItem('selectedCountry', pais);
   localStorage.setItem('selectedFlag', bandera);
 }
-function subToggleMenu() {
-  var subMenuContainer = document.getElementById('subMenuContainer');
-  subMenuContainer.classList.toggle('open');
+function cargarTraducciones() {
+  fetch(`/${lang4}.json`)
+    .then(response => response.json())
+    .then(data => aplicarTraducciones(data))
+    .catch(error => console.error('Error al cargar las traducciones', error));
+}
+
+// Función para aplicar las traducciones en la página
+function aplicarTraducciones(traducciones) {
+  // Reemplaza el contenido de los elementos HTML con las traducciones correspondientes
+  document.getElementById('webcamButton').innerText = traducciones.boton_webcam;
+  document.getElementById('callButton').innerText = traducciones.crear_codigo;
+  document.getElementById('callInput').setAttribute('placeholder', traducciones.placeholder_codigo);
+  document.getElementById('answerButton').innerText = traducciones.ingresar_llamada;
+  document.getElementById('hangupButton').innerText = traducciones.salir_sala;
+  document.getElementById('messageInput').setAttribute('placeholder', traducciones.escribir_mensaje);
+  document.getElementById('sendMessageButton').innerText = traducciones.enviar;
+  // Actualiza más elementos de la página con sus traducciones correspondientes
 }
 
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCurrentUser();
+  console.log(lang4);
 
 
   const webcamButton = document.getElementById('webcamButton');
@@ -132,6 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const messageForm = document.getElementById('messageForm');
   const messageInput = document.getElementById('messageInput');
   const messageArea = document.getElementById('messageArea');
+  const emparejarLlamada = document.getElementById('emparejarLlamada');
   
   function generateRandomRoomId() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -148,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let roomId = generateRandomRoomId();
   webcamButton.onclick = async () => {
     roomId = callInput.value || roomId || generateRandomRoomId();
-    
+    console.log(roomId);
     const callDoc = firestore.collection('calls').doc(roomId);
     const messagesCollection = firestore.collection('messages').doc(roomId).collection('roomMessages');
   
@@ -192,11 +202,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   
   
-  
+
   callButton.onclick = async () => {
     const callId = callInput.value;
     roomId = callId || roomId || generateRandomRoomId();
-  
+    console.log(roomId);
     if (!roomId) {
       console.error('No se ha establecido el roomId.');
       return;
@@ -242,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     hangupButton.disabled = false;
   
     // Obtener los mensajes de la sala correspondiente al ID ingresado
-    const otherRoomDoc = firestore.collection('messages').doc(callId).collection('roomMessages');
+    const otherRoomDoc = firestore.collection('messages').doc(roomId).collection('roomMessages');
   
     // Escuchar los cambios en la otra sala
     otherRoomDoc.orderBy('timestamp').onSnapshot((snapshot) => {
@@ -252,29 +262,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
   };
   
-  function displayMessages(snapshot) {
-    snapshot.docChanges().forEach(async (change) => {
-      if (change.type === 'added') {
-        const messageId = change.doc.id;
-        if (!displayedMessages.has(messageId)) {
-          displayedMessages.add(messageId);
   
-          const messageData = change.doc.data();
-          const translatedText = await translateText(messageData.text, lang2);
-          const messageElement = document.createElement('div');
-          messageElement.textContent = `${messageData.sender}: ${translatedText}`;
-          messageArea.appendChild(messageElement);
-  
-          console.log(`Message added: ${messageId}`);
-          console.log(displayedMessages);
-        }
-      }
-    });
-  }
   answerButton.onclick = async () => {
     const callId = callInput.value;
     roomId = callId || roomId || generateRandomRoomId();
-  
+    console.log(roomId);
     if (!roomId) {
       console.error('No se ha establecido el roomId.');
       return;
@@ -320,35 +312,193 @@ document.addEventListener('DOMContentLoaded', async () => {
       displayMessages(snapshot); // Mostrar los mensajes en el área correspondiente
     });
   };
-  hangupButton.onclick = async () => {
-    // Detener los streams de video y audio
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-      webcamVideo.srcObject = null;
-    }
-    if (remoteStream) {
-      remoteStream.getTracks().forEach(track => track.stop());
-      remoteVideo.srcObject = null;
+  emparejarLlamada.onclick = async () => {
+    const userLang2 = lang2; // Idioma objetivo del usuario
+    const userLang4 = lang4; // Idioma hablante del usuario
+  
+    // Acceder a la colección 'createdRooms' en Firestore
+    const createdRoomsRef = firestore.collection('createdRooms');
+  
+    // Consulta para buscar salas donde coincidan ambos idiomas
+    const matchingRoom = await createdRoomsRef
+      .where('idiomaHablante', '==', userLang4)
+      .where('idiomaObjetivo', '==', userLang2)
+      .where('participantes', '==', '1')
+      .get();
+  
+    // Si hay una sala que coincida con ambos idiomas, tomar el roomId y responder la llamada
+    if (!matchingRoom.empty) {
+      const roomId = matchingRoom.docs[0].data().roomId;
+      currentRoomId = roomId;
+      try {
+        const querySnapshot = await createdRoomsRef.where('roomId', '==', currentRoomId).get();
+        querySnapshot.forEach(async (doc) => {
+          try {
+            // Obtener el ID del documento actual
+            const roomId = doc.id;
+      
+            // Actualizar el campo específico dentro del documento
+            await firestore.collection('createdRooms').doc(roomId).update({
+              participantes: "2" // Reemplaza campoAActualizar y nuevoValor con los nombres correctos
+            });
+          } catch (error) {
+            console.error('Error al actualizar:', error);
+          }
+          });
+        } catch (error) {
+          console.error('Error al obtener el documento:', error);
+        }
+      document.getElementById('callInput').value = roomId;
+      document.getElementById('answerButton').click();
+      return;
     }
   
-    // Cerrar la conexión RTCPeerConnection
-    if (pc) {
-      pc.close();
+    // Si no hay coincidencia, buscar una sala donde coincida cualquier idioma
+    const anyMatchingRoom = await createdRoomsRef
+      .where('idiomaHablante', '==', userLang4)
+      .where('participantes', '==', '1')
+      .get();
+  
+    // Si hay una sala que coincida con lang4, tomar el roomId y responder la llamada
+    if (!anyMatchingRoom.empty) {
+      const anyRoomId = anyMatchingRoom.docs[0].data().roomId;
+      currentRoomId = anyRoomId;
+      try {
+        const querySnapshot = await createdRoomsRef.where('roomId', '==', currentRoomId).get();
+        querySnapshot.forEach(async (doc) => {
+          try {
+            // Obtener el ID del documento actual
+            const roomId = doc.id;
+      
+            // Actualizar el campo específico dentro del documento
+            await firestore.collection('createdRooms').doc(roomId).update({
+              participantes: "2" // Reemplaza campoAActualizar y nuevoValor con los nombres correctos
+            });
+          } catch (error) {
+            console.error('Error al actualizar:', error);
+          }
+          });
+        } catch (error) {
+          console.error('Error al obtener el documento:', error);
+        }
+      document.getElementById('callInput').value = anyRoomId;
+      document.getElementById('answerButton').click();
+      return;
     }
   
-    // Limpiar los mensajes en el área del chat
-    messageArea.innerHTML = '';
+    // Si no hay coincidencia aún, buscar una sala con cualquier idioma
+    const anyRoom = await createdRoomsRef
+    .where('participantes', '==', '1')
+    .get();
   
-    // Desactivar los botones y resetear el estado de la llamada
-    hangupButton.disabled = true;
-    callButton.disabled = false;
-    answerButton.disabled = false;
-    webcamButton.disabled = false;
+    // Si hay alguna sala, tomar el roomId y responder la llamada
+    if (!anyRoom.empty) {
+      const randomRoomId = anyRoom.docs[0].data().roomId;
+      currentRoomId = randomRoomId;
+      try {
+        const querySnapshot = await createdRoomsRef.where('roomId', '==', currentRoomId).get();
+        querySnapshot.forEach(async (doc) => {
+          try {
+            // Obtener el ID del documento actual
+            const roomId = doc.id;
+      
+            // Actualizar el campo específico dentro del documento
+            await firestore.collection('createdRooms').doc(roomId).update({
+              participantes: "2" // Reemplaza campoAActualizar y nuevoValor con los nombres correctos
+            });
+          } catch (error) {
+            console.error('Error al actualizar:', error);
+          }
+          });
+        } catch (error) {
+          console.error('Error al obtener el documento:', error);
+        }
+          
+      document.getElementById('callInput').value = randomRoomId;
+      document.getElementById('answerButton').click();
+      return;
+    }
+  
+    // Si no hay ninguna sala, crear una nueva con los idiomas del usuario
+    const newRoomId = generateRandomRoomId(); // Generar roomId aleatorio
+    document.getElementById('callInput').value = newRoomId;
+    currentRoomId = newRoomId;
+    console.log(currentRoomId);
+  
+    // Agregar nueva sala a la base de datos
+    await createdRoomsRef.add({
+      idiomaHablante: userLang4,
+      idiomaObjetivo: userLang2,
+      roomId: newRoomId,
+      participantes: '1',
+    });
     
-    // Realizar otras operaciones de limpieza o desconexión que sean necesarias
-    // Por ejemplo, puedes dejar la sala, cerrar conexiones adicionales, etc.
-    // También podrías añadir lógica adicional según tus necesidades específicas.
-  };
+    // Llamar a la sala recién creada
+    document.getElementById('callButton').click();
+  }
+  async function eliminarSala() {
+    if (!currentRoomId) {
+      console.error('No se ha especificado el ID de la sala');
+      return;
+    }
+  
+    const roomsRef = firestore.collection('createdRooms');
+    try {
+      const querySnapshot = await roomsRef.where('roomId', '==', currentRoomId).get();
+  
+      querySnapshot.forEach(async (doc) => {
+        // Eliminar cada documento que coincida con el currentRoomId
+        await doc.ref.delete();
+        console.log('Sala eliminada exitosamente');
+      });
+    } catch (error) {
+      console.error('Error al eliminar la sala:', error);
+      // Manejar el error apropiadamente (mostrar un mensaje al usuario, intentar nuevamente, etc.)
+    }
+  }
+  if (hangupButton) {
+    hangupButton.onclick = async () => {
+      console.log(uidsala);
+      await eliminarSala();
+        // Detener los streams de video y audio
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          webcamVideo.srcObject = null;
+        }
+        if (remoteStream) {
+          remoteStream.getTracks().forEach(track => track.stop());
+          remoteVideo.srcObject = null;
+        }
+      
+        // Cerrar la conexión RTCPeerConnection
+        if (pc) {
+          pc.close();
+        }
+      
+        // Limpiar los mensajes en el área del chat
+        messageArea.innerHTML = '';
+      
+        // Desactivar los botones y resetear el estado de la llamada
+        hangupButton.disabled = true;
+        callButton.disabled = false;
+        answerButton.disabled = false;
+        webcamButton.disabled = false;
+        
+        setTimeout(() => {
+          location.reload(); // Recargar la página
+        }, 1000); // Puedes ajustar el tiempo de retraso si es necesario
+      
+        // Activar automáticamente la función asociada al botón "startwebcam" después de recargar la página
+        window.onload = () => {
+          const startWebcamButton = document.getElementById('webcamButton');
+          if (startWebcamButton) {
+            startWebcamButton.click(); // Simular un clic en el botón "startwebcam" después de cargar la página
+          }
+        };
+      };
+  }
+
+  
   messageForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const messageText = messageInput.value;
@@ -385,8 +535,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           const messageData = change.doc.data();
           const messageElement = document.createElement('div');
           const translatedText = await translateText(messageData.text, lang2);
-          messageElement.textContent = `${messageData.sender}: ${translatedText}`;
-          messageArea.appendChild(messageElement);
+          if (messageData.sender === currentUser) {
+            // Mostrar el mensaje local sin traducir
+            messageElement.textContent = `${messageData.sender}: ${messageData.text}`;
+          } else if (!messageData.isLocal) {
+            // Traducir y mostrar el mensaje remoto
+            messageElement.textContent = `${messageData.sender}: ${translatedText}`;
+          }
+          messageArea.insertBefore(messageElement, messageArea.firstChild);
         }
       }
     });
@@ -394,7 +550,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     function transcribeAndTranslateAudio(stream) {
         const recognition = new webkitSpeechRecognition();
-        recognition.lang = 'es-ES'; // Establecer el idioma de entrada (puede variar según el idioma de los participantes)
+        recognition.lang = lang; // Establecer el idioma de entrada (puede variar según el idioma de los participantes)
         recognition.continuous = true;
     
         recognition.onresult = async (event) => {
@@ -402,10 +558,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
           try {
             // Llamada a la función de traducción
-            const translatedText = await translateText(transcript, 'en'); // Reemplaza 'en' con el idioma al que deseas traducir
+            const translatedText = transcript; // Reemplaza 'en' con el idioma al que deseas traducir
     
             // Enviar el texto traducido al chat
             sendMessage(translatedText);
+            resetRecognitionTimer();
           } catch (error) {
             console.error('Error al transcribir y traducir audio:', error);
           }
@@ -413,29 +570,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     
         recognition.onerror = (event) => {
           console.error('Error en la transcripción:', event.error);
+          restartRecognition();
         };
     
         recognition.start();
+        startRecognitionTimer();
         console.error('El reconocimiento de voz no está disponible en este navegador.');
         recognition.onerror = (event) => {
           console.error('Error en la transcripción:', event.error);
           // Vuelve a iniciar el reconocimiento en caso de error
-          restartRecognition();
+          transcribeAndTranslateAudio();
         };
         // Lógica alternativa o mensaje para el usuario sobre la falta de compatibilidad
         // Por ejemplo: Mostrar un mensaje indicando que la función de reconocimiento de voz no está disponible
 
     }
     function restartRecognition() {
+      // Detener y limpiar el reconocimiento existente
       if (recognition) {
         recognition.stop();
         recognition = null;
       }
-      
-      // Vuelve a iniciar el reconocimiento después de un tiempo determinado (por ejemplo, cada 5 minutos)
-      setInterval(() => {
-        startRecognition();
-      }, 5 * 60 * 1000); // 5 minutos en milisegundos
+    
+      // Iniciar un nuevo reconocimiento después de un breve intervalo
+      setTimeout(() => {
+        transcribeAndTranslateAudio();
+      }, 1000); // Reiniciar después de 1 segundo
+    }
+    
+    let recognitionTimer;
+    
+    function startRecognitionTimer() {
+      // Establecer un temporizador para reiniciar el reconocimiento si no hay actividad después de un tiempo
+      recognitionTimer = setTimeout(() => {
+        console.log('Reconocimiento de voz inactivo. Reiniciando...');
+        restartRecognition();
+      }, 60000); // Reiniciar después de 1 minuto de inactividad (ajusta el tiempo según sea necesario)
+    }
+    
+    function resetRecognitionTimer() {
+      // Reiniciar el temporizador si hay actividad de voz
+      clearTimeout(recognitionTimer);
+      startRecognitionTimer();
     }
     
     async function translateText(text, targetLanguage) {
@@ -469,7 +645,37 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
     // Esta función enviará el mensaje traducido al chat
-  
+    function displayMessages(snapshot) {
+      snapshot.docChanges().forEach(async (change) => {
+        if (change.type === 'added') {
+          const messageId = change.doc.id;
+          if (!displayedMessages.has(messageId)) {
+            displayedMessages.add(messageId);
+    
+            const messageData = change.doc.data();
+            const messageElement = document.createElement('div');
+            
+            // Verificar si el mensaje es del usuario local o remoto antes de mostrarlo
+            if (messageData.sender === currentUser) {
+              // Mostrar el mensaje local sin traducir
+              messageElement.textContent = `${messageData.sender}: ${messageData.text}`;
+            } else if (!messageData.isLocal) {
+              // Traducir y mostrar el mensaje remoto
+              const translatedText = await translateText(messageData.text, lang2);
+              messageElement.textContent = `${messageData.sender}: ${translatedText}`;
+            } else {
+              // Mostrar el mensaje del usuario que inicia la llamada sin traducir
+              messageElement.textContent = `${messageData.sender}: ${messageData.text}`;
+            }
+    
+            messageArea.insertBefore(messageElement, messageArea.firstChild);
+    
+            console.log(`Message added: ${messageId}`);
+            console.log(displayedMessages);
+          }
+        }
+      });
+    }
     async function sendMessage(text) {
       try {
         const messageData = {
@@ -496,7 +702,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const messageElement = document.createElement('div');
           const translatedText = await translateText(messageData.text, lang2);
           messageElement.textContent = `${messageData.sender}: ${translatedText}`;
-          messageArea.appendChild(messageElement);
+          messageArea.insertBefore(messageElement, messageArea.firstChild);
         }
       }
     });
